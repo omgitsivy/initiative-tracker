@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, ChevronLeft, ChevronRight, Lock, Unlock, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Lock, Unlock, ChevronUp, Skull } from 'lucide-react';
 
 const NumberInput = ({ value, onChange, label, isDarkMode }) => {
   const increment = (amount) => {
@@ -63,6 +63,7 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
   };
 
   const getHealthColor = (currentHp, maxHp) => {
+    if (currentHp <= 0) return isDarkMode ? 'rgb(0, 0, 0)' : 'rgb(0, 0, 0)'; // Black for 0 or less HP
     const healthPercentage = (currentHp / maxHp) * 100;
     if (healthPercentage > 66) return isDarkMode ? 'rgba(72, 187, 120, 0.2)' : 'rgba(72, 187, 120, 0.1)'; // green
     if (healthPercentage > 33) return isDarkMode ? 'rgba(236, 201, 75, 0.2)' : 'rgba(236, 201, 75, 0.1)'; // yellow
@@ -72,9 +73,10 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
   return (
     <ul className="space-y-4 mt-4">
       <AnimatePresence>
-        {creatures.map((creature) => {
+        {creatures.map((creature, index) => {
           const { preview, hasMore, remaining } = getNotePreviews(creature.notes);
           const healthColor = getHealthColor(creature.currentHp, creature.maxHp);
+          const isDefeated = creature.currentHp <= 0;
           return (
             <motion.li
               key={creature.id}
@@ -83,10 +85,10 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
               exit={{ opacity: 0, scale: 0.5 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               layout
-              className={`p-4 rounded-lg shadow-md ${creature.isLocked ? 'border-2 border-purple-500' : ''}`}
+              className={`p-4 rounded-lg shadow-md ${creature.isLocked ? 'border-2 border-purple-500' : ''} ${isDefeated && !creature.isLocked ? 'opacity-60' : ''}`}
               style={{ 
                 backgroundColor: healthColor,
-                color: isDarkMode ? 'white' : 'black'
+                color: isDefeated ? 'white' : (isDarkMode ? 'white' : 'black')
               }}
             >
               <div className="flex flex-wrap items-center justify-between mb-2">
@@ -110,6 +112,7 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                     </motion.button>
                   </div>
                   <span className="font-bold text-lg mr-2">{creature.name}</span>
+                  {isDefeated && <Skull size={20} className="text-red-500 mr-2" />}
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -138,25 +141,25 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                   value={creature.maxHp}
                   onChange={(value) => onUpdateCreature(creature.id, 'maxHp', value)}
                   label="Max HP"
-                  isDarkMode={isDarkMode}
+                  isDarkMode={isDarkMode || isDefeated}
                 />
                 <NumberInput
                   value={creature.currentHp}
                   onChange={(value) => onUpdateCreature(creature.id, 'currentHp', value)}
                   label="Current HP"
-                  isDarkMode={isDarkMode}
+                  isDarkMode={isDarkMode || isDefeated}
                 />
                 <NumberInput
                   value={creature.tempHp}
                   onChange={(value) => onUpdateCreature(creature.id, 'tempHp', value)}
                   label="Temp HP"
-                  isDarkMode={isDarkMode}
+                  isDarkMode={isDarkMode || isDefeated}
                 />
                 <NumberInput
                   value={creature.ac}
                   onChange={(value) => onUpdateCreature(creature.id, 'ac', value)}
                   label="AC"
-                  isDarkMode={isDarkMode}
+                  isDarkMode={isDarkMode || isDefeated}
                 />
               </div>
               <div className="mt-2">
@@ -165,13 +168,13 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                     initial={false}
                     animate={{ rotate: expandedCreatures[creature.id] ? 180 : 0 }}
                     onClick={() => toggleExpand(creature.id)}
-                    className={`mr-2 ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}
+                    className={isDarkMode ? 'text-gray-300 hover:text-white mr-2' : 'text-gray-700 hover:text-black mr-2'}
                   >
                     <ChevronDown size={20} />
                   </motion.button>
                   <span className="text-sm font-semibold">Notes</span>
                 </div>
-                <div className={`mt-1 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                <div className="mt-1 text-sm">
                   {preview || "No notes added yet."}
                 </div>
                 {expandedCreatures[creature.id] && (
@@ -184,7 +187,11 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                     <textarea
                       value={creature.notes}
                       onChange={(e) => onUpdateCreature(creature.id, 'notes', e.target.value)}
-                      className={`w-full mt-2 px-3 py-2 ${isDarkMode ? 'text-gray-200 bg-gray-600 border-gray-500' : 'text-gray-800 bg-gray-200 border-gray-400'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                      className={`w-full mt-2 px-3 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                        isDarkMode || isDefeated
+                          ? 'bg-gray-700 text-white border-gray-600'
+                          : 'bg-white text-gray-800 border-gray-300'
+                      }`}
                       rows={hasMore ? "5" : "3"}
                       placeholder="Add notes here..."
                     />

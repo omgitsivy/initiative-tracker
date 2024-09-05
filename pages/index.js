@@ -48,8 +48,15 @@ export default function Home() {
     
     setTimeout(() => {
       const sortedCreatures = rolledCreatures.sort((a, b) => {
+        // Locked creatures always stay in place
         if (a.isLocked && !b.isLocked) return -1;
         if (!a.isLocked && b.isLocked) return 1;
+        
+        // Defeated creatures (0 or less HP) go to the bottom
+        if (a.currentHp <= 0 && b.currentHp > 0) return 1;
+        if (a.currentHp > 0 && b.currentHp <= 0) return -1;
+        
+        // Sort by initiative for the rest
         return b.initiative - a.initiative;
       });
       setCreatures(sortedCreatures);
@@ -67,9 +74,24 @@ export default function Home() {
   };
 
   const updateCreature = (id, field, value) => {
-    setCreatures(creatures.map(creature =>
-      creature.id === id ? { ...creature, [field]: value } : creature
-    ));
+    setCreatures(prevCreatures => {
+      const updatedCreatures = prevCreatures.map(creature =>
+        creature.id === id ? { ...creature, [field]: value } : creature
+      );
+      
+      // Re-sort the creatures if currentHp was updated
+      if (field === 'currentHp') {
+        return updatedCreatures.sort((a, b) => {
+          if (a.isLocked && !b.isLocked) return -1;
+          if (!a.isLocked && b.isLocked) return 1;
+          if (a.currentHp <= 0 && b.currentHp > 0) return 1;
+          if (a.currentHp > 0 && b.currentHp <= 0) return -1;
+          return b.initiative - a.initiative;
+        });
+      }
+      
+      return updatedCreatures;
+    });
   };
 
   const removeCreature = (id) => {
