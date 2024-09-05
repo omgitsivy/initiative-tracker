@@ -1,14 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import CreatureForm from '../components/CreatureForm';
 import InitiativeList from '../components/InitiativeList';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export default function Home() {
   const [creatures, setCreatures] = useState([]);
   const [isRolling, setIsRolling] = useState(false);
 
-  const addCreature = (creature) => {
-    setCreatures([...creatures, { ...creature, id: Date.now(), initiative: 0 }]);
+  const addCreatures = (creatureData) => {
+    const { name, hp, ac, initiativeBonus, amount, notes } = creatureData;
+    const newCreatures = Array.from({ length: amount }, (_, index) => ({
+      id: Date.now() + index,
+      name: `${name}${amount > 1 ? ` ${index + 1}` : ''}`,
+      hp: parseInt(hp),
+      ac: parseInt(ac),
+      initiativeBonus: parseInt(initiativeBonus),
+      initiative: 0,
+      notes: notes
+    }));
+    setCreatures([...creatures, ...newCreatures]);
   };
 
   const rollInitiative = () => {
@@ -22,9 +32,9 @@ export default function Home() {
     }, 1000);
   };
 
-  const updateHP = (id, newHP) => {
+  const updateCreature = (id, field, value) => {
     setCreatures(creatures.map(creature =>
-      creature.id === id ? { ...creature, hp: newHP } : creature
+      creature.id === id ? { ...creature, [field]: value } : creature
     ));
   };
 
@@ -41,7 +51,7 @@ export default function Home() {
         className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl p-8"
       >
         <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center">Initiative Tracker</h1>
-        <CreatureForm onAddCreature={addCreature} />
+        <CreatureForm onAddCreatures={addCreatures} />
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
@@ -51,7 +61,11 @@ export default function Home() {
         >
           {isRolling ? 'Rolling...' : 'Roll Initiative'}
         </motion.button>
-        <InitiativeList creatures={creatures} onUpdateHP={updateHP} onRemoveCreature={removeCreature} />
+        <InitiativeList 
+          creatures={creatures} 
+          onUpdateCreature={updateCreature} 
+          onRemoveCreature={removeCreature} 
+        />
       </motion.div>
     </div>
   );
