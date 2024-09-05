@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronLeft, ChevronRight, Lock, Unlock, ChevronUp } from 'lucide-react';
 
-
-const NumberInput = ({ value, onChange, label }) => {
+const NumberInput = ({ value, onChange, label, isDarkMode }) => {
   const increment = (amount) => {
     onChange(value + amount);
   };
@@ -13,41 +12,41 @@ const NumberInput = ({ value, onChange, label }) => {
       <span className="text-sm font-medium mb-1">{label}</span>
       <div className="flex items-center mb-1">
         <div className="flex flex-col items-center mr-2">
-          <button onClick={() => increment(-10)} className="text-gray-400 hover:text-gray-200">
+          <button onClick={() => increment(-10)} className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}>
             <ChevronLeft size={20} />
           </button>
-          <span className="text-xs text-gray-400">-10</span>
+          <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>-10</span>
         </div>
         <div className="flex flex-col items-center mr-1">
-          <button onClick={() => increment(-1)} className="text-gray-400 hover:text-gray-200">
+          <button onClick={() => increment(-1)} className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}>
             <ChevronLeft size={16} />
           </button>
-          <span className="text-xs text-gray-400">-1</span>
+          <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>-1</span>
         </div>
         <input
           type="number"
           value={value}
           onChange={(e) => onChange(parseInt(e.target.value))}
-          className="w-16 text-center bg-transparent border-b border-gray-600 focus:outline-none focus:border-purple-500 text-gray-100"
+          className={`w-16 text-center bg-transparent border-b ${isDarkMode ? 'border-gray-600 text-gray-100' : 'border-gray-400 text-gray-800'} focus:outline-none focus:border-purple-500`}
         />
         <div className="flex flex-col items-center ml-1">
-          <button onClick={() => increment(1)} className="text-gray-400 hover:text-gray-200">
+          <button onClick={() => increment(1)} className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}>
             <ChevronRight size={16} />
           </button>
-          <span className="text-xs text-gray-400">+1</span>
+          <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>+1</span>
         </div>
         <div className="flex flex-col items-center ml-2">
-          <button onClick={() => increment(10)} className="text-gray-400 hover:text-gray-200">
+          <button onClick={() => increment(10)} className={`${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}>
             <ChevronRight size={20} />
           </button>
-          <span className="text-xs text-gray-400">+10</span>
+          <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>+10</span>
         </div>
       </div>
     </div>
   );
 };
 
-export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCreature, onToggleLock, onMoveCreature, isRolling }) {
+export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCreature, onToggleLock, onMoveCreature, isRolling, isDarkMode }) {
   const [expandedCreatures, setExpandedCreatures] = useState({});
 
   const toggleExpand = (id) => {
@@ -63,11 +62,19 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
     };
   };
 
+  const getHealthColor = (currentHp, maxHp) => {
+    const healthPercentage = (currentHp / maxHp) * 100;
+    if (healthPercentage > 66) return isDarkMode ? 'rgba(72, 187, 120, 0.2)' : 'rgba(72, 187, 120, 0.1)'; // green
+    if (healthPercentage > 33) return isDarkMode ? 'rgba(236, 201, 75, 0.2)' : 'rgba(236, 201, 75, 0.1)'; // yellow
+    return isDarkMode ? 'rgba(245, 101, 101, 0.2)' : 'rgba(245, 101, 101, 0.1)'; // red
+  };
+
   return (
     <ul className="space-y-4 mt-4">
       <AnimatePresence>
-        {creatures.map((creature, index) => {
+        {creatures.map((creature) => {
           const { preview, hasMore, remaining } = getNotePreviews(creature.notes);
+          const healthColor = getHealthColor(creature.currentHp, creature.maxHp);
           return (
             <motion.li
               key={creature.id}
@@ -76,16 +83,20 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
               exit={{ opacity: 0, scale: 0.5 }}
               transition={{ type: "spring", stiffness: 300, damping: 25 }}
               layout
-              className={`bg-gray-700 p-4 rounded-lg shadow-md ${creature.isLocked ? 'border-2 border-purple-500' : ''}`}
+              className={`p-4 rounded-lg shadow-md ${creature.isLocked ? 'border-2 border-purple-500' : ''}`}
+              style={{ 
+                backgroundColor: healthColor,
+                color: isDarkMode ? 'white' : 'black'
+              }}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex flex-wrap items-center justify-between mb-2">
                 <div className="flex items-center">
                   <div className="flex flex-col mr-2">
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => onMoveCreature(creature.id, 'up')}
-                      className="text-gray-400 hover:text-gray-200"
+                      className={isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}
                     >
                       <ChevronUp size={20} />
                     </motion.button>
@@ -93,7 +104,7 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => onMoveCreature(creature.id, 'down')}
-                      className="text-gray-400 hover:text-gray-200"
+                      className={isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}
                     >
                       <ChevronDown size={20} />
                     </motion.button>
@@ -103,12 +114,12 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={() => onToggleLock(creature.id)}
-                    className={`text-gray-400 hover:text-gray-200 ${creature.isLocked ? 'text-purple-500' : ''}`}
+                    className={`${creature.isLocked ? 'text-purple-500' : isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
                   >
                     {creature.isLocked ? <Lock size={20} /> : <Unlock size={20} />}
                   </motion.button>
                 </div>
-                <div className="flex items-center">
+                <div className="flex items-center mt-2 sm:mt-0">
                   <span className="mr-4 font-medium">Initiative: {creature.initiative}</span>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
@@ -127,21 +138,25 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                   value={creature.maxHp}
                   onChange={(value) => onUpdateCreature(creature.id, 'maxHp', value)}
                   label="Max HP"
-                />
-                <NumberInput
-                  value={creature.tempHp}
-                  onChange={(value) => onUpdateCreature(creature.id, 'tempHp', value)}
-                  label="Temp HP"
+                  isDarkMode={isDarkMode}
                 />
                 <NumberInput
                   value={creature.currentHp}
                   onChange={(value) => onUpdateCreature(creature.id, 'currentHp', value)}
                   label="Current HP"
+                  isDarkMode={isDarkMode}
+                />
+                <NumberInput
+                  value={creature.tempHp}
+                  onChange={(value) => onUpdateCreature(creature.id, 'tempHp', value)}
+                  label="Temp HP"
+                  isDarkMode={isDarkMode}
                 />
                 <NumberInput
                   value={creature.ac}
                   onChange={(value) => onUpdateCreature(creature.id, 'ac', value)}
                   label="AC"
+                  isDarkMode={isDarkMode}
                 />
               </div>
               <div className="mt-2">
@@ -150,13 +165,13 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                     initial={false}
                     animate={{ rotate: expandedCreatures[creature.id] ? 180 : 0 }}
                     onClick={() => toggleExpand(creature.id)}
-                    className="mr-2 text-gray-400 hover:text-gray-200"
+                    className={`mr-2 ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}
                   >
                     <ChevronDown size={20} />
                   </motion.button>
                   <span className="text-sm font-semibold">Notes</span>
                 </div>
-                <div className="mt-1 text-sm text-gray-300">
+                <div className={`mt-1 text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   {preview || "No notes added yet."}
                 </div>
                 {expandedCreatures[creature.id] && (
@@ -169,7 +184,7 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                     <textarea
                       value={creature.notes}
                       onChange={(e) => onUpdateCreature(creature.id, 'notes', e.target.value)}
-                      className="w-full mt-2 px-3 py-2 text-gray-200 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className={`w-full mt-2 px-3 py-2 ${isDarkMode ? 'text-gray-200 bg-gray-600 border-gray-500' : 'text-gray-800 bg-gray-200 border-gray-400'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500`}
                       rows={hasMore ? "5" : "3"}
                       placeholder="Add notes here..."
                     />

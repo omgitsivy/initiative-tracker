@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import CreatureForm from '../components/CreatureForm';
 import InitiativeList from '../components/InitiativeList';
 import ImportModal from '../components/ImportModal';
 import NotificationModal from '../components/NotificationModal';
-import { ChevronDown, ChevronUp, Save, Upload } from 'lucide-react';
+import InitiativeHistory from '../components/InitiativeHistory';
+import { ChevronDown, ChevronUp, Save, Upload, Moon, Sun } from 'lucide-react';
 import { encodeState, decodeState } from '../utils/stateManager';
 
 export default function Home() {
@@ -13,8 +14,14 @@ export default function Home() {
   const [isFormVisible, setIsFormVisible] = useState(true);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [notification, setNotification] = useState({ isOpen: false, message: '' });
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [initiativeHistory, setInitiativeHistory] = useState([]);
+  const [isHistoryVisible, setIsHistoryVisible] = useState(false);
 
-
+  useEffect(() => {
+    // Apply dark mode class to body
+    document.body.classList.toggle('dark', isDarkMode);
+  }, [isDarkMode]);
 
   const addCreatures = (creatureData) => {
     const { name, hp, ac, initiativeBonus, amount, notes } = creatureData;
@@ -22,7 +29,6 @@ export default function Home() {
       id: Date.now() + index,
       name: `${name}${amount > 1 ? ` ${index + 1}` : ''}`,
       maxHp: parseInt(hp),
-      tempHp: 0,
       currentHp: parseInt(hp),
       ac: parseInt(ac),
       initiativeBonus: parseInt(initiativeBonus),
@@ -48,6 +54,15 @@ export default function Home() {
       });
       setCreatures(sortedCreatures);
       setIsRolling(false);
+      
+      // Add to initiative history
+      setInitiativeHistory(prev => [
+        ...prev,
+        {
+          timestamp: new Date().toISOString(),
+          order: sortedCreatures.map(c => ({ name: c.name, initiative: c.initiative }))
+        }
+      ]);
     }, 1000);
   };
 
@@ -76,7 +91,7 @@ export default function Home() {
     newCreatures.splice(direction === 'up' ? index - 1 : index + 1, 0, movedCreature);
     setCreatures(newCreatures);
   };
-  
+
   const saveState = () => {
     const encodedState = encodeState(creatures);
     navigator.clipboard.writeText(encodedState).then(() => {
@@ -99,19 +114,27 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-8">
+    <div className={`min-h-screen p-4 md:p-8 ${isDarkMode ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-4xl mx-auto bg-gray-800 rounded-lg shadow-xl p-8"
+        className={`max-w-4xl mx-auto ${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl p-4 md:p-8`}
       >
-        <h1 className="text-4xl font-extrabold mb-8 text-center text-gray-100">Initiative Tracker</h1>
-        
-        <div className="mb-4 flex justify-between items-center">
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl md:text-4xl font-extrabold">Initiative Tracker</h1>
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-2 rounded-full ${isDarkMode ? 'bg-yellow-400 text-gray-900' : 'bg-gray-800 text-yellow-400'}`}
+          >
+            {isDarkMode ? <Sun size={24} /> : <Moon size={24} />}
+          </button>
+        </div>
+
+        <div className="mb-4 flex flex-wrap justify-between items-center">
           <button 
             onClick={() => setIsFormVisible(!isFormVisible)}
-            className="flex items-center text-gray-300 hover:text-white"
+            className={`flex items-center ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'} mb-2 md:mb-0`}
           >
             {isFormVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             <span className="ml-2">{isFormVisible ? 'Hide' : 'Show'} Add Creature Form</span>
@@ -136,7 +159,7 @@ export default function Home() {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <CreatureForm onAddCreatures={addCreatures} />
+              <CreatureForm onAddCreatures={addCreatures} isDarkMode={isDarkMode} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -151,6 +174,29 @@ export default function Home() {
           {isRolling ? 'Rolling...' : 'Roll Initiative'}
         </motion.button>
 
+        <div className="mt-4 flex justify-between items-center">
+          <button
+            onClick={() => setIsHistoryVisible(!isHistoryVisible)}
+            className={`flex items-center ${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-black'}`}
+          >
+            {isHistoryVisible ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            <span className="ml-2">Initiative History</span>
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {isHistoryVisible && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <InitiativeHistory history={initiativeHistory} isDarkMode={isDarkMode} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence>
           <InitiativeList 
             creatures={creatures} 
@@ -159,6 +205,7 @@ export default function Home() {
             onToggleLock={toggleLock}
             onMoveCreature={moveCreature}
             isRolling={isRolling}
+            isDarkMode={isDarkMode}
           />
         </AnimatePresence>
 
@@ -166,14 +213,17 @@ export default function Home() {
           isOpen={isImportModalOpen} 
           onClose={() => setIsImportModalOpen(false)} 
           onImport={importState}
+          isDarkMode={isDarkMode}
         />
 
         <NotificationModal
           isOpen={notification.isOpen}
           onClose={() => setNotification({ ...notification, isOpen: false })}
           message={notification.message}
+          isDarkMode={isDarkMode}
         />
       </motion.div>
     </div>
   );
 }
+
