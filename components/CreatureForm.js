@@ -29,7 +29,7 @@ export default function CreatureForm({ onAddCreatures }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Creature Name"
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
             required
           />
         </div>
@@ -39,7 +39,7 @@ export default function CreatureForm({ onAddCreatures }) {
             value={hp}
             onChange={(e) => setHp(e.target.value)}
             placeholder="HP"
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
             required
           />
         </div>
@@ -49,7 +49,7 @@ export default function CreatureForm({ onAddCreatures }) {
             value={ac}
             onChange={(e) => setAc(e.target.value)}
             placeholder="AC"
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
             required
           />
         </div>
@@ -59,7 +59,7 @@ export default function CreatureForm({ onAddCreatures }) {
             value={initiativeBonus}
             onChange={(e) => setInitiativeBonus(e.target.value)}
             placeholder="Initiative Bonus"
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
             required
           />
         </div>
@@ -70,7 +70,7 @@ export default function CreatureForm({ onAddCreatures }) {
             onChange={(e) => setAmount(Math.max(1, parseInt(e.target.value)))}
             placeholder="Amount"
             min="1"
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
             required
           />
         </div>
@@ -80,7 +80,7 @@ export default function CreatureForm({ onAddCreatures }) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Notes (optional)"
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
           rows="3"
         />
       </div>
@@ -88,7 +88,7 @@ export default function CreatureForm({ onAddCreatures }) {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         type="submit"
-        className="w-full bg-gradient-to-r from-green-400 to-blue-500 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:shadow-lg"
+        className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:shadow-lg"
       >
         Add Creature{amount > 1 ? 's' : ''}
       </motion.button>
