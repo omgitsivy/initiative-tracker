@@ -19,9 +19,39 @@ export default function Home() {
   const [isHistoryVisible, setIsHistoryVisible] = useState(false);
 
   useEffect(() => {
+    const savedCreatures = localStorage.getItem('creatures');
+    if (savedCreatures) {
+      setCreatures(JSON.parse(savedCreatures));
+    }
+
+    const savedHistory = localStorage.getItem('initiativeHistory');
+    if (savedHistory) {
+      setInitiativeHistory(JSON.parse(savedHistory));
+    }
+
+    const savedDarkMode = localStorage.getItem('isDarkMode');
+    if (savedDarkMode !== null) {
+      setIsDarkMode(JSON.parse(savedDarkMode));
+    }
+  }, []);
+
+  // Save creatures to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('creatures', JSON.stringify(creatures));
+  }, [creatures]);
+
+  // Save initiative history to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('initiativeHistory', JSON.stringify(initiativeHistory));
+  }, [initiativeHistory]);
+
+  // Save dark mode preference to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
     document.body.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
+  
   const addCreatures = (creatureData) => {
     const { name, hp, ac, initiativeBonus, amount, notes } = creatureData;
     const newCreatures = Array.from({ length: amount }, (_, index) => ({
