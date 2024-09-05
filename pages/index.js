@@ -30,6 +30,7 @@ export default function Home() {
       name: `${name}${amount > 1 ? ` ${index + 1}` : ''}`,
       maxHp: parseInt(hp),
       currentHp: parseInt(hp),
+      tempHp: 0,
       ac: parseInt(ac),
       initiativeBonus: parseInt(initiativeBonus),
       initiative: 0,
