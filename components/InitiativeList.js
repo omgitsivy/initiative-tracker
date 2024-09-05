@@ -99,6 +99,7 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                       whileTap={{ scale: 0.9 }}
                       onClick={() => onMoveCreature(creature.id, 'up')}
                       className={isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}
+                      disabled={index === 0 || creature.isLocked}
                     >
                       <ChevronUp size={20} />
                     </motion.button>
@@ -107,6 +108,7 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
                       whileTap={{ scale: 0.9 }}
                       onClick={() => onMoveCreature(creature.id, 'down')}
                       className={isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}
+                      disabled={index === creatures.length - 1 || creature.isLocked}
                     >
                       <ChevronDown size={20} />
                     </motion.button>
@@ -205,3 +207,4 @@ export default function InitiativeList({ creatures, onUpdateCreature, onRemoveCr
     </ul>
   );
 }
+

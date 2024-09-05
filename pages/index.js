@@ -19,7 +19,6 @@ export default function Home() {
   const [isHistoryVisible, setIsHistoryVisible] = useState(false);
 
   useEffect(() => {
-    // Apply dark mode class to body
     document.body.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
 
@@ -42,59 +41,57 @@ export default function Home() {
 
   const rollInitiative = () => {
     setIsRolling(true);
-    const rolledCreatures = creatures.map(creature => ({
-      ...creature,
-      initiative: creature.isLocked ? creature.initiative : Math.floor(Math.random() * 20) + 1 + creature.initiativeBonus
-    }));
-    
-    setTimeout(() => {
-      const sortedCreatures = rolledCreatures.sort((a, b) => {
-        // Locked creatures always stay in place
-        if (a.isLocked && !b.isLocked) return -1;
-        if (!a.isLocked && b.isLocked) return 1;
-        
-        // Defeated creatures (0 or less HP) go to the bottom
+    setCreatures(prevCreatures => {
+      const newCreatures = prevCreatures.map((creature, index) => ({
+        ...creature,
+        initiative: creature.isLocked ? creature.initiative : Math.floor(Math.random() * 20) + 1 + creature.initiativeBonus,
+        originalIndex: index
+      }));
+  
+      // Sort only the unlocked creatures
+      const unlockedCreatures = newCreatures.filter(c => !c.isLocked).sort((a, b) => {
         if (a.currentHp <= 0 && b.currentHp > 0) return 1;
         if (a.currentHp > 0 && b.currentHp <= 0) return -1;
-        
-        // Sort by initiative for the rest
         return b.initiative - a.initiative;
       });
-      setCreatures(sortedCreatures);
-      setIsRolling(false);
-      
-      // Add to initiative history
-      setInitiativeHistory(prev => [
-        ...prev,
-        {
-          timestamp: new Date().toISOString(),
-          order: sortedCreatures.map(c => ({ name: c.name, initiative: c.initiative }))
+  
+      // Merge locked and unlocked creatures, maintaining original positions of locked creatures
+      const finalCreatures = newCreatures.map((creature, index) => {
+        if (creature.isLocked) {
+          return { ...creature, originalIndex: undefined };
+        } else {
+          const newCreature = unlockedCreatures.shift();
+          return { ...newCreature, originalIndex: undefined };
         }
-      ]);
-    }, 1000);
+      });
+  
+      setTimeout(() => {
+        setIsRolling(false);
+        
+        // Add to initiative history
+        setInitiativeHistory(prev => [
+          ...prev,
+          {
+            timestamp: new Date().toISOString(),
+            order: finalCreatures.map(c => ({ name: c.name, initiative: c.initiative }))
+          }
+        ]);
+      }, 1000);
+  
+      return finalCreatures;
+    });
   };
+  
+  
 
   const updateCreature = (id, field, value) => {
     setCreatures(prevCreatures => {
-      const updatedCreatures = prevCreatures.map(creature =>
+      return prevCreatures.map(creature => 
         creature.id === id ? { ...creature, [field]: value } : creature
       );
-      
-      // Re-sort the creatures if currentHp was updated
-      if (field === 'currentHp') {
-        return updatedCreatures.sort((a, b) => {
-          if (a.isLocked && !b.isLocked) return -1;
-          if (!a.isLocked && b.isLocked) return 1;
-          if (a.currentHp <= 0 && b.currentHp > 0) return 1;
-          if (a.currentHp > 0 && b.currentHp <= 0) return -1;
-          return b.initiative - a.initiative;
-        });
-      }
-      
-      return updatedCreatures;
     });
   };
-
+  
   const removeCreature = (id) => {
     setCreatures(creatures.filter(creature => creature.id !== id));
   };
@@ -249,4 +246,3 @@ export default function Home() {
     </div>
   );
 }
-
