@@ -35,21 +35,23 @@ export default function Home() {
     }
   }, []);
 
-  // Save creatures to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('creatures', JSON.stringify(creatures));
   }, [creatures]);
 
-  // Save initiative history to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('initiativeHistory', JSON.stringify(initiativeHistory));
   }, [initiativeHistory]);
 
-  // Save dark mode preference to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
     document.body.classList.toggle('dark', isDarkMode);
   }, [isDarkMode]);
+
+  const clearInitiativeHistory = () => {
+    setInitiativeHistory([]);
+    setNotification({ isOpen: true, message: 'Initiative history cleared' });
+  };
 
   
   const addCreatures = (creatureData) => {
@@ -78,14 +80,12 @@ export default function Home() {
         originalIndex: index
       }));
   
-      // Sort only the unlocked creatures
       const unlockedCreatures = newCreatures.filter(c => !c.isLocked).sort((a, b) => {
         if (a.currentHp <= 0 && b.currentHp > 0) return 1;
         if (a.currentHp > 0 && b.currentHp <= 0) return -1;
         return b.initiative - a.initiative;
       });
   
-      // Merge locked and unlocked creatures, maintaining original positions of locked creatures
       const finalCreatures = newCreatures.map((creature, index) => {
         if (creature.isLocked) {
           return { ...creature, originalIndex: undefined };
@@ -98,7 +98,6 @@ export default function Home() {
       setTimeout(() => {
         setIsRolling(false);
         
-        // Add to initiative history
         setInitiativeHistory(prev => [
           ...prev,
           {
@@ -242,7 +241,11 @@ export default function Home() {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
             >
-              <InitiativeHistory history={initiativeHistory} isDarkMode={isDarkMode} />
+              <InitiativeHistory 
+                history={initiativeHistory} 
+                isDarkMode={isDarkMode} 
+                onClearHistory={clearInitiativeHistory}
+              />
             </motion.div>
           )}
         </AnimatePresence>

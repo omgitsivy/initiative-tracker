@@ -1,9 +1,19 @@
 import { motion } from 'framer-motion';
+import { Trash2 } from 'lucide-react';
 
-export default function InitiativeHistory({ history, isDarkMode }) {
+export default function InitiativeHistory({ history, isDarkMode, onClearHistory }) {
   return (
     <div className={`mt-4 p-4 rounded-lg ${isDarkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-      <h2 className={`text-xl font-bold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Initiative History</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>Initiative History</h2>
+        <button
+          onClick={onClearHistory}
+          className={`p-2 rounded-full ${isDarkMode ? 'bg-gray-600 hover:bg-gray-500' : 'bg-gray-200 hover:bg-gray-300'} transition-colors duration-200`}
+          title="Clear History"
+        >
+          <Trash2 size={16} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
+        </button>
+      </div>
       {history.length === 0 ? (
         <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>No initiative rolls yet.</p>
       ) : (
